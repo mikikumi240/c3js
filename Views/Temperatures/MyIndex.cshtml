@@ -1,0 +1,220 @@
+﻿@model IEnumerable<MyMVCApplication.Models.Temperatures>
+
+@{
+    ViewBag.Title = "MyIndex";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>MyIndex</h2>
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<div id="GaugeChart"></div>
+
+<script type="text/javascript">    
+        
+    $(function () {
+        console.log("ready!");
+        callajax();
+    });
+    function callajax()    {
+        $.ajax({
+            type: "GET",
+            url: "http://localhost:47005/Temperatures/GetTAShort",
+            data: {},
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            //success: function (response) {
+            //console.log(response);//worked ok
+            //successFunc(response);
+            //},
+            success: function (response) {
+                console.log('the response is:');
+                console.log(response);
+                successFuncVer2(response);
+            },
+            error: function (request, status, error) {
+                console.log(request.responseText);
+                alert(request.responseText);
+            },
+            
+            });//end ajax
+        }//end callajax
+        var self = this;
+        
+        
+        function SuccessFuncGibuy(jsondata) {
+            var sum_list = ['x'];
+            for(var i in jsondata)
+                sum_list.push(jsondata[i]["DayTime"])
+            console.log(sum_list);
+            var data1 = ['data1'];
+            for(var i in jsondata)
+                data1.push(jsondata[i]["Degrees"])
+            console.log(data1);
+            var chart = c3.generate({
+                data: {
+                    x: 'x',
+                    columns: [
+                       sum_list,
+                       data1
+                    ]
+                }
+            });
+            setTimeout(function () {
+                chart.load({
+                    columns: [
+                        data1
+                    ]
+                });
+            }, 1000);
+
+        }//end the notanarrow
+
+        
+        var successFunc  =function(jsondata) {
+            console.log('i am in success func');
+            var tmp = JSON.parse(JSON.stringify(jsondata));
+             
+            console.log(typeof(tmp));
+            //return 0;
+            var sum_list = ['x'];
+            tmp.forEach(function (item) {
+                sum_list.push(item["DayTime"])
+                console.log(item["DayTime"]);
+            });
+
+                           
+            console.log(sum_list);
+
+            var data1 = ['data1'];
+            
+            tmp.forEach(function (item) {
+                data1.push(item["Degrees"])
+                console.log(item["Degrees"]);
+            });
+            console.log(data1);
+            
+
+            var chart = c3.generate({
+                bindto: '#GaugeChart',
+                data: {
+                    x: 'x',
+                    columns: [
+                       sum_list,
+                       data1
+                    ]
+                }
+            });
+            setTimeout(function () {
+                chart.load({
+                    columns: [
+                        data1
+                    ]
+                });
+            }, 1000);
+        }
+    
+        var successFuncVer2 = function (jsondata) {
+            console.log('i am in success func');
+            var tmp = JSON.parse(JSON.stringify(jsondata));
+
+            console.log(typeof (tmp));
+            //return 0;
+            var sum_list = ['x'];
+            tmp.forEach(function (item) {
+                sum_list.push(item["DayTime"])
+                console.log(item["DayTime"]);
+            });
+
+
+            console.log(sum_list);
+
+            var data1 = ['temperature'];
+
+            tmp.forEach(function (item) {
+                data1.push(item["Degrees"])
+                console.log(item["Degrees"]);
+            });
+            console.log(data1);
+
+
+            //
+            var chart = c3.generate({
+
+                bindto: '#GaugeChart',
+                data: {
+                    x: 'x',
+                    xFormat: '%Y-%m-%d %H:%M:%S',
+                    columns: [
+                        sum_list,
+                        data1
+                    ],
+                    axes: {
+                        'temperature': 'y2'
+                    },
+                    type: 'bar',
+                    types: {
+                        temperature: 'line'
+                    },
+                },
+                
+                axis: {
+                    x: {
+                        type: 'timeseries',
+                        tick: {
+                            format: '%Y-%m-%d %H:%M:%S'
+                        }
+                        
+                    },
+                    //y: {
+                    //    label: {
+                    //        text: 'Some data',
+                    //        position: 'outer-middle'
+                    //    }
+                    //},
+                    y2: {
+                        show: true,
+                        label: {
+                            text: ' temperature',
+                            position: 'outer-middle'
+                        },
+                        max: 20,
+                        min: 0
+                    }
+                }
+            });
+            //chart.dateFormatter.dateFormat = "yyyy-MM-dd H:mm"
+            //
+        }
+
+</script>
+
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.DayTime)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Degrees)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.DayTime)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Degrees)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
+            @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
+            @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+        </td>
+    </tr>
+}
+
+</table>

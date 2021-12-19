@@ -1,0 +1,161 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+using System.Net.Http;
+using System.Data;
+using Newtonsoft.Json;
+
+namespace MyMVCApplication.Controllers
+{
+    //public class JsonInfoorg
+    //{
+    //    public string dt_txt { get; set; }
+        
+    //    public Main main { get; set; }
+         
+    //}
+    //public class Main
+    //{
+    //    public string temp { get; set; }
+        
+    //}
+     
+    public class TemperaturesController : Controller
+    {
+        // GET: Mvc2Test
+        [Route("Mvctestp")]
+        public ActionResult MyIndexp(int? id)
+        {
+            return View();
+        }
+
+
+       
+        [ActionName("MyIndex")] 
+        public ActionResult MyIndex()//http://localhost:47005/Temperatures/MyIndex
+        {
+            string sUrl = "http://api.openweathermap.org/data/2.5/forecast?lat=25.0853&lon=28.1111&appid=4ce97563e2ccf5dc64513ebb6aba9faa&units=metric";
+             
+            HttpClient client = new HttpClient();
+            HttpResponseMessage response = client.GetAsync(sUrl).Result;
+            string ret = response.Content.ReadAsStringAsync().Result;
+            
+            var jObject = Newtonsoft.Json.Linq.JObject.Parse(ret);
+            
+            var postTitles =
+            from p in jObject["list"]
+            select (string)p["main"]["temp"];
+
+            foreach (var item in postTitles)
+            {
+                Console.WriteLine(item);
+            }
+            var postTitles2 =
+            from p in jObject["list"]
+            select new { temp=(string)p["main"]["temp"],dt_txt= (string)p["dt_txt"] };
+            foreach (var item in postTitles2)
+            {
+                Console.WriteLine(item);
+            }
+            var data = postTitles2.Select(x =>
+                new Models.Temperatures
+                {
+                    DayTime = DateTime.Parse( x.dt_txt).ToString("yyyy-MM-dd HH:mm"),
+                    Degrees =float.Parse ( x.temp)
+                });
+
+            var list = data.ToList<Models.Temperatures>();
+            return View(list);//2 see the table!!!!
+            var tmp = JsonConvert.SerializeObject(list);
+            //hard coded due to server connection problem
+            string hardcoded = "[{'DayTime':'1','Degrees':'10'},{'DayTime':'2','Degrees':'12'},{'DayTime':'3','Degrees':'14'},{'DayTime':'4','Degrees':'16'},{'DayTime':'5','Degrees':'18'},{'DayTime':'6','Degrees':'20'},{'DayTime':'7','Degrees':'22'}]";
+            //return View((object)hardcoded);
+            //
+            return View(list);
+            return View(tmp);
+            //the next are not relevant
+
+            DataTable dtMin = new DataTable();
+            dtMin.Columns.Add("dt_txt", typeof(string));
+            dtMin.Columns.Add("temp", typeof(string));
+            //foreach (var value in data)
+            //{
+            //    DataRow dr= dtMin.NewRow();
+            //    dr["dt_txt"] = "";
+            //    dr["temp"] = "";
+            //    dtMin.Rows.Add(dr);
+            //}
+            //jObject["list"]
+            DataSet ds = (DataSet)JsonConvert.DeserializeObject(ret, (typeof(DataSet))); 
+            DataTable dt = JsonConvert.DeserializeObject<DataTable>(ret);
+             
+
+            DataView dv = new DataView(dt);
+            DataTable dtRet = dv.ToTable("Selected", false, "temp", "dt_txt");
+            string strRetJson = JsonConvert.SerializeObject(dtRet, Formatting.Indented);
+            return View(strRetJson); 
+        }
+
+        //***********
+        [ActionName("GetTAShort")]//[ActionName("GetTelAviv")] 
+        public string GetTAShort()//http://localhost:47005/Temperatures/MyIndex
+        {
+            //List<Models.Temperatures> lst = new List<Models.Temperatures>();
+            //lst.Add(new Models.Temperatures { DayTime = 1, Degrees = 10 });
+            //lst.Add(new Models.Temperatures { DayTime = 2, Degrees = 11 });
+            //lst.Add(new Models.Temperatures { DayTime = 3, Degrees = 12 });
+            //lst.Add(new Models.Temperatures { DayTime = 4, Degrees = 13 });
+            //lst.Add(new Models.Temperatures { DayTime = 5, Degrees = 14 });
+            //lst.Add(new Models.Temperatures { DayTime = 6, Degrees = 15 });
+            //lst.Add(new Models.Temperatures { DayTime = 7, Degrees = 16 });
+
+            //string hardcoded = "[{'DayTime':'1','Degrees':'10'},{'DayTime':'2','Degrees':'12'},{'DayTime':'3','Degrees':'14'},{'DayTime':'4','Degrees':'16'},{'DayTime':'5','Degrees':'18'},{'DayTime':'6','Degrees':'20'},{'DayTime':'7','Degrees':'22'}]";
+            //hardcoded = JsonConvert.SerializeObject(lst, Formatting.Indented);
+            //ok!!!return hardcoded;
+
+
+
+            string sUrl = "http://api.openweathermap.org/data/2.5/forecast?lat=25.0853&lon=28.1111&appid=4ce97563e2ccf5dc64513ebb6aba9faa&units=metric";
+            HttpClient client = new HttpClient();
+            HttpResponseMessage response = client.GetAsync(sUrl).Result;
+            string ret = response.Content.ReadAsStringAsync().Result;
+
+            var jObject = Newtonsoft.Json.Linq.JObject.Parse(ret);
+
+            var postTitles =
+            from p in jObject["list"]
+            select (string)p["main"]["temp"];
+
+            foreach (var item in postTitles)
+            {
+                Console.WriteLine(item);
+            }
+            var postTitles2 =
+            from p in jObject["list"]
+            select new { temp = (string)p["main"]["temp"], dt_txt = (string)p["dt_txt"] };
+            foreach (var item in postTitles2)
+            {
+                Console.WriteLine(item);
+            }
+            var data = postTitles2.Select(x =>
+                new Models.Temperatures
+                {
+                    DayTime = DateTime.Parse( x.dt_txt).ToString("yyyy-MM-dd H:mm:ss"),
+                    Degrees =float.Parse( x.temp)
+                });
+
+            var list = data.ToList<Models.Temperatures>();
+            string tmp = JsonConvert.SerializeObject(list);
+            return tmp;
+            //hard coded due to server connection problem
+            //string hardcoded = "[{'DayTime':'1','Degrees':'10'},{'DayTime':'2','Degrees':'12'},{'DayTime':'3','Degrees':'14'},{'DayTime':'4','Degrees':'16'},{'DayTime':'5','Degrees':'18'},{'DayTime':'6','Degrees':'20'},{'DayTime':'7','Degrees':'22'}]";
+            //return View((object)hardcoded);
+            
+            
+            
+        }
+
+    }
+}
